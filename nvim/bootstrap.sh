@@ -12,6 +12,7 @@ packages=(
   curl
   wget
   unzip
+  rsync
   ripgrep
   fd
   nodejs
@@ -25,11 +26,12 @@ packages=(
   rubygems
   jdk-openjdk
   clang
+  base-devel
   rust
+  tree-sitter-cli-git
 )
 
-paru -S --needed --noconfirm "${packages[@]}"
-paru -S --needed --noconfirm tree-sitter-cli-git
+paru -Syyuu --needed --noconfirm "${packages[@]}"
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 config_src="$script_dir"
