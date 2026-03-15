@@ -81,6 +81,7 @@ copy_with_backup() {
 echo "Installing homefiles from: $SCRIPT_DIR"
 
 copy_with_backup "$SCRIPT_DIR/.config/fish/config.fish" "$HOME/.config/fish/config.fish"
+copy_with_backup "$SCRIPT_DIR/.config/fish/conf.d/private-state-ssh-agent.fish" "$HOME/.config/fish/conf.d/private-state-ssh-agent.fish"
 copy_with_backup "$SCRIPT_DIR/usr/share/cachyos-fish-config/cachyos-config.fish" "/usr/share/cachyos-fish-config/cachyos-config.fish"
 copy_with_backup "$SCRIPT_DIR/usr/share/cachyos-fish-config/conf.d/done.fish" "/usr/share/cachyos-fish-config/conf.d/done.fish"
 

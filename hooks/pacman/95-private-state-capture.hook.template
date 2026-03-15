@@ -1,0 +1,12 @@
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Target = *
+
+[Action]
+Description = Capture package/firewall state to private-state
+When = PostTransaction
+Exec = /path/to/public/dotfiles/capture/capture-system-state.sh
+Depends = bash

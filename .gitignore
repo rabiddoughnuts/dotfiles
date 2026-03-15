@@ -1,0 +1,13 @@
+# Guardrails for accidental private-state commits
+private-state/
+**/private-state/
+**/private-state-backups/
+
+# Local environment and generated artifacts
+.env
+.env.*
+*.local
+
+# Machine-generated artifacts
+hooks/pacman/95-private-state-capture.hook
+systemd/private-state-integrity.generated.service

@@ -1,0 +1,9 @@
+[Unit]
+Description=Private-state integrity check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=PRIVATE_STATE_ROOT=%h/../private-state
+ExecStart=/path/to/public/dotfiles/scripts/private-state-integrity-check.sh
