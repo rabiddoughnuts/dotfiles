@@ -6,7 +6,7 @@ See the repository overview in [../README.md](../README.md).
 
 ## Core Operations
 
-- `sync-private-state.sh`: capture host state, commit changes in private-state, optionally push.
+- `sync-private-state.sh`: stage and commit changes in private-state, optionally push.
 - `private-state-maintenance.sh`: wrapper workflow for capture, integrity check, and sync.
 - `private-state-integrity-check.sh`: validates expected private-state structure and key files.
 - `smoke-test-private-state.sh`: lightweight end-to-end verification.

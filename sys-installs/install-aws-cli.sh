@@ -48,8 +48,8 @@ cleanup() {
 trap cleanup EXIT
 
 echo "Installing prerequisites with apt..."
-DEBIAN_FRONTEND=noninteractive apt update -qq >/dev/null
-DEBIAN_FRONTEND=noninteractive apt install -y -qq curl unzip >/dev/null
+DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null
+DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl unzip >/dev/null
 
 echo "Downloading AWS CLI installer..."
 curl -fsSL "${AWS_ZIP_URL}" -o "${tmp_dir}/awscliv2.zip"

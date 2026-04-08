@@ -35,6 +35,7 @@ This repository contains my local environment setup, centered on Neovim configur
 - [scripts](scripts/README.md): Operational helpers (sync, maintenance, installers, encrypted backups).
 - [state-templates](state-templates/README.md): Templates and notes for private-state bootstrap.
 - [systemd](systemd/README.md): Service and timer templates used by install scripts.
+- [sys-installs](sys-installs/README.md): System software installer scripts and assignment-ready documentation.
 
 ## Notes
 
