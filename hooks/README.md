@@ -7,6 +7,9 @@ See the repository overview in [../README.md](../README.md).
 ## Contents
 
 - `pacman/95-private-state-capture.hook.template`: template used to generate a host-specific pacman post-transaction capture hook.
+- `pacman/95-private-state-capture.hook`: generated hook with the rendered absolute capture-script path.
+
+The generated hook is host/path specific and should be regenerated if this repo moves.
 
 ## Common Commands
 

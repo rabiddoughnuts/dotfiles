@@ -32,7 +32,7 @@ Dry-run maintenance:
 ./scripts/private-state-maintenance.sh --dry-run
 ```
 
-Capture and sync private-state with push:
+Sync private-state with push:
 
 ```bash
 ./scripts/sync-private-state.sh --push --message "Update host state"
