@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Blocks commits that appear to include private state or secrets in the public repo.
+# Block public commits that appear to include private-state paths or secret-like files.
+# General use:
+# - Intended to run from the repository pre-commit hook.
+# - Only inspects staged paths, not the entire working tree.
 
 mapfile -t staged_files < <(git diff --cached --name-only)
 
@@ -20,6 +23,7 @@ blocked_patterns=(
   '\.kdbx$'
 )
 
+# Compare each staged path against a small denylist of obvious private artifacts.
 violations=()
 for f in "${staged_files[@]}"; do
   for p in "${blocked_patterns[@]}"; do

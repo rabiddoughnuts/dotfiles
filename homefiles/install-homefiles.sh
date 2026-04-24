@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+#
+# Install tracked shell-related homefiles into their real system locations.
+# General use:
+# - Copy the Fish config files in this repo into $HOME and selected /usr paths.
+# - Create timestamped backups before replacing existing files.
+# - Use --dry-run first to preview both user-space and sudo-protected writes.
+#
+# Environment assumptions:
+# - Assumes bash plus standard coreutils.
+# - Assumes Fish is the target shell.
+# - Assumes CachyOS-style Fish config files live under /usr/share/cachyos-fish-config/.
+#
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,6 +45,7 @@ copy_with_backup() {
   local src="$1"
   local dest="$2"
 
+  # Skip optional files cleanly so one missing source does not abort the full install pass.
   if [[ ! -f "$src" ]]; then
     echo "[skip] source missing: $src"
     return 0
@@ -41,6 +54,7 @@ copy_with_backup() {
   local dest_dir
   dest_dir="$(dirname "$dest")"
 
+  # Writes under /usr require sudo and use sudo for both the backup and the copy.
   if [[ "$dest" == /usr/* ]]; then
     if [[ $DRY_RUN -eq 1 ]]; then
       echo "[dry-run] sudo mkdir -p $dest_dir"
@@ -80,6 +94,7 @@ copy_with_backup() {
 
 echo "Installing homefiles from: $SCRIPT_DIR"
 
+# Install both user-scoped Fish config and the system-level CachyOS overrides.
 copy_with_backup "$SCRIPT_DIR/.config/fish/config.fish" "$HOME/.config/fish/config.fish"
 copy_with_backup "$SCRIPT_DIR/.config/fish/conf.d/private-state-ssh-agent.fish" "$HOME/.config/fish/conf.d/private-state-ssh-agent.fish"
 copy_with_backup "$SCRIPT_DIR/usr/share/cachyos-fish-config/cachyos-config.fish" "/usr/share/cachyos-fish-config/cachyos-config.fish"

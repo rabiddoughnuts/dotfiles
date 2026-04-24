@@ -1,3 +1,8 @@
+# User-level service template for private-state integrity checks.
+# General use:
+# - Render this template so ExecStart points at the current checkout.
+# - Install it alongside the timer into ~/.config/systemd/user.
+
 [Unit]
 Description=Private-state integrity check
 After=network-online.target
@@ -5,5 +10,6 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+# Default to a sibling private-state repo relative to the user's home directory.
 Environment=PRIVATE_STATE_ROOT=%h/../private-state
 ExecStart=/path/to/public/dotfiles/scripts/private-state-integrity-check.sh

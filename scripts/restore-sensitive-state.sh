@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Decrypt a sensitive backup from private-state back into a local file path.
+# General use:
+# - Restore the latest encrypted ssh key backup by default.
+# - Allow alternate input/output paths for recovery workflows.
+# - Lock down restored file permissions after decryption.
+#
 set -euo pipefail
 
 DRY_RUN=0
@@ -46,6 +53,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Make missing backup files fail early before any output paths are created.
 if [[ ! -f "$IN_FILE" ]]; then
   echo "Encrypted backup not found: $IN_FILE" >&2
   exit 1
@@ -60,6 +68,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
   exit 0
 fi
 
+# Recreate the destination directory if needed, then decrypt and lock down the result.
 mkdir -p "$OUT_DIR"
 
 gpg --decrypt --output "$OUT_FILE" "$IN_FILE"

@@ -1,9 +1,15 @@
-﻿## Source from conf.d before our fish config
+﻿# Local override of the distro-provided CachyOS Fish config.
+# General use:
+# - Keep the CachyOS startup model, but add local PATH setup, helper functions,
+#   history helpers, and aliases expected on this machine.
+# - This file is installed into /usr/share, so it assumes the CachyOS layout.
+
+## Source from conf.d before our fish config
 source /usr/share/cachyos-fish-config/conf.d/done.fish
 
 
 ## Set values
-## Run fastfetch as welcome message
+## Keep the greeting minimal here; user-specific greeting logic can override it later.
 function fish_greeting
     fastfetch
 end
@@ -17,7 +23,7 @@ set -U __done_min_cmd_duration 10000
 set -U __done_notification_urgency_level low
 
 ## Environment setup
-# Apply .profile: use this to put fish compatible .profile stuff in
+# Load optional fish-compatible profile fragments before extending PATH further.
 if test -f ~/.fish_profile
   source ~/.fish_profile
 end
@@ -38,7 +44,7 @@ end
 
 
 ## Functions
-# Functions needed for !! and !$ https://github.com/oh-my-fish/plugin-bang-bang
+# Provide !! and !$ style shortcuts similar to bang-bang history expansion.
 function __history_previous_command
   switch (commandline -t)
   case "!"
@@ -58,6 +64,7 @@ function __history_previous_command_arguments
   end
 end
 
+# Rebind the helpers correctly for either vi-mode or default Fish bindings.
 if [ "$fish_key_bindings" = fish_vi_key_bindings ];
   bind -Minsert ! __history_previous_command
   bind -Minsert '$' __history_previous_command_arguments
@@ -71,6 +78,7 @@ function history
     builtin history --show-time='%F %T '
 end
 
+# Small convenience wrappers used throughout the local shell workflow.
 function backup --argument filename
     cp $filename $filename.bak
 end
@@ -88,6 +96,7 @@ function copy
 end
 
 ## Useful aliases
+# Most aliases here assume an Arch/CachyOS userland and common desktop tools.
 # Replace ls with eza
 alias ls='eza -l --color=always --group-directories-first --icons' # preferred listing
 alias ll='eza -la --color=always --group-directories-first --icons'  # long format

@@ -1,3 +1,8 @@
+# Pacman hook template for post-transaction state capture.
+# General use:
+# - Render this template with the absolute path to capture-system-state.sh.
+# - Install the rendered file into /etc/pacman.d/hooks to capture package/firewall state after package changes.
+
 [Trigger]
 Type = Package
 Operation = Install
@@ -6,6 +11,7 @@ Operation = Remove
 Target = *
 
 [Action]
+# Run after the transaction finishes so package state reflects the new system state.
 Description = Capture package/firewall state to private-state
 When = PostTransaction
 Exec = /path/to/public/dotfiles/capture/capture-system-state.sh

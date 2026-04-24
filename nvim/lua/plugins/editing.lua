@@ -1,3 +1,4 @@
+-- Everyday editing helpers: autopairs, surround motions, and comment toggling.
 return {
   {
     "windwp/nvim-autopairs",

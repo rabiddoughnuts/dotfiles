@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Validate that the sibling private-state repo has the expected structure and
+# that the last capture is recent enough to trust.
+#
 set -euo pipefail
 
 MAX_CAPTURE_AGE_DAYS="${MAX_CAPTURE_AGE_DAYS:-7}"
@@ -20,6 +24,7 @@ fail() {
 
 echo "[integrity] checking private-state at: $PRIVATE_STATE_ROOT"
 
+# Check the minimum directory and metadata structure needed by the rest of the workflow.
 [[ -d "$PRIVATE_STATE_ROOT" ]] || fail "missing private-state root"
 [[ -d "$PRIVATE_STATE_ROOT/.git" ]] || fail "private-state is not a git repository"
 [[ -d "$HOST_DIR/packages" ]] || fail "missing packages directory for host $HOSTNAME_SAFE"
@@ -32,6 +37,7 @@ if ! [[ "$LAST_EPOCH" =~ ^[0-9]+$ ]]; then
   fail "invalid epoch value in $META_EPOCH_FILE"
 fi
 
+# Treat an old capture as an integrity failure so stale state is visible immediately.
 AGE_SECONDS="$((NOW_EPOCH - LAST_EPOCH))"
 if [[ "$AGE_SECONDS" -gt "$MAX_AGE_SECONDS" ]]; then
   fail "capture metadata is stale (${AGE_SECONDS}s old, max ${MAX_AGE_SECONDS}s)"
@@ -39,6 +45,7 @@ fi
 
 echo "[integrity] capture age: ${AGE_SECONDS}s (max ${MAX_AGE_SECONDS}s)"
 
+# Report git dirtiness as useful operator context without failing on it.
 if [[ -z "$(git -C "$PRIVATE_STATE_ROOT" status --porcelain)" ]]; then
   echo "[integrity] git status: clean"
 else

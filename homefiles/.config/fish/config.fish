@@ -1,6 +1,13 @@
-# 1. Load CachyOS Defaults
+# User Fish shell configuration layered on top of the CachyOS defaults.
+# General use:
+# - Start from the distro-provided CachyOS Fish config, then add local behavior.
+# - Define greeting behavior, helper functions, environment variables, and aliases.
+# - Keep machine-specific conveniences here instead of in the installer script.
+
+# Load the distro-level defaults first so local overrides happen afterwards.
 source /usr/share/cachyos-fish-config/cachyos-config.fish
 
+# Only run command-history or hardware-specific startup work in interactive shells.
 if status is-interactive
     # 1. Load modprobed-db store
     modprobed-db store
@@ -11,8 +18,8 @@ export PATH="$HOME/bin:$PATH"
 
 set -gx CONTAINERS /home/brandon/containers/
 
-# 2. Change fish greeting
-# if changed or uncommented, disables current fastfetch greeting, can customize
+# Replace the default greeting so maintenance alerts can interrupt the usual
+# fastfetch dashboard when there is a pending log the user should read.
 function fish_greeting
     if set -q maintenance_alert; and test "$maintenance_alert" = "true"
         set_color yellow
@@ -31,6 +38,8 @@ function fish_greeting
     end
 end
 
+# Placeholder token value kept in config for local override; this should be
+# replaced with a real value outside shared history when actually used.
 set -x MEDIA_ADMIN_TOKEN "your-admin-token"
 
 function read_log
@@ -38,34 +47,37 @@ function read_log
     echo "Flag cleared. Have a productive session!"
 end
 
+# Quick helper for creating/editing root-owned config files in-place.
 function mkconf
     sudo mkdir -p (dirname $argv[1])
     sudo nvim $argv[1]
 end
 
-# 3. Environment Variables
+# Core shell environment values used by local tools and editor flows.
 set -gx PATH $PATH ~/bin
 set -gx SUDO_EDITOR nvim
 set -gx SCRAPER_PROGRESS 1
 
-# 4. Initialize Zoxide
+# Prefer zoxide navigation when it is installed, but do not require it.
 if type -q zoxide
     zoxide init fish | source
 end
 
 function lookup
-    # 1. Search and import keys matching the email/name
+    # Search a public keyserver, import any matching public keys, then show fingerprints.
     gpg --batch --with-colons --keyserver keyserver.ubuntu.com --search-keys $argv[1] | \
     awk -F: '$1=="pub"{print $2}' | xargs -I {} gpg --keyserver keyserver.ubuntu.com --recv-keys {}
 
-    # 2. Print the full fingerprint of any imported keys matching that search
+    # Show the resulting fingerprints so the imported keys can be verified manually.
     gpg --fingerprint $argv[1]
 end
 
+# Wrap volatility containers so the normal commands can be used like local tools.
 function vol2
     singularity exec $CONTAINERS/volatility2.sif python2 /opt/volatility/vol.py $argv
 end
 
+# Convert a PDF to Markdown and default the output name to the source stem.
 function markdown
     if test (count $argv) -eq 0
         echo "Usage: markdown <input.pdf> [output.md]"
@@ -87,7 +99,7 @@ function markdown
     /home/brandon/bin/markitdown-env/bin/markitdown "$input" > "$output_path"
 end
 
-# 5. Your Personal Aliases
+# Personal aliases are grouped by domain so shell behavior is easier to scan.
 ### Navigation & Core Aliases
 alias ..='z ..'
 alias cd='z'

@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Generate and optionally install the pacman hook that triggers state capture.
+# General use:
+# - Fill in the absolute capture script path inside the hook template.
+# - Leave the generated hook in-repo by default for inspection.
+# - Use --apply to install it into /etc/pacman.d/hooks.
+#
 set -euo pipefail
 
 APPLY=0
@@ -34,6 +41,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Resolve template, generated output, and the system install destination.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TEMPLATE="$REPO_ROOT/hooks/pacman/95-private-state-capture.hook.template"
 GENERATED="$REPO_ROOT/hooks/pacman/95-private-state-capture.hook"
@@ -51,11 +59,13 @@ if [[ ! -x "$CAPTURE_SCRIPT" ]]; then
   exit 1
 fi
 
+# Render the hook from template so the pacman unit has the real capture path.
 escaped_capture_script="${CAPTURE_SCRIPT//\//\/}"
 sed "s|/path/to/public/dotfiles/capture/capture-system-state.sh|$escaped_capture_script|g" "$TEMPLATE" > "$GENERATED"
 
 echo "Generated hook: $GENERATED"
 
+# Installation is opt-in because it writes into a root-owned pacman hooks directory.
 if [[ $APPLY -eq 1 ]]; then
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "[dry-run] sudo install -d -m 755 $TARGET_DIR"

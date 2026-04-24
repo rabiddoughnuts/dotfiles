@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Create an encrypted backup of a sensitive key file inside private-state.
+# General use:
+# - Symmetrically encrypt a local key file with GPG.
+# - Store both a timestamped copy and a "latest" pointer file.
+# - Default target is the private-state ssh key backup directory.
+#
 set -euo pipefail
 
 DRY_RUN=0
@@ -42,11 +49,13 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Refuse to continue if the source file does not exist; this backup is intentionally explicit.
 if [[ ! -f "$KEY_FILE" ]]; then
   echo "Sensitive key file not found: $KEY_FILE" >&2
   exit 1
 fi
 
+# Dry-run mode prints the encryption and copy steps without prompting for a passphrase.
 if [[ $DRY_RUN -eq 1 ]]; then
   echo "[dry-run] mkdir -p $OUT_DIR"
   echo "[dry-run] gpg --symmetric --cipher-algo AES256 --output $OUT_FILE $KEY_FILE"
@@ -56,6 +65,7 @@ fi
 
 mkdir -p "$OUT_DIR"
 
+# Keep a timestamped archive plus a stable "latest" file for restore scripts.
 gpg --symmetric --cipher-algo AES256 --output "$OUT_FILE" "$KEY_FILE"
 cp -f "$OUT_FILE" "$LATEST_FILE"
 

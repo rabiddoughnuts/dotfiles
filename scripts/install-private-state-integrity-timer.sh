@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Generate and install a user-level systemd timer for integrity checks.
+# General use:
+# - Rewrite the service template with the absolute integrity-check script path.
+# - Preview the install with --dry-run.
+# - Use --apply to copy the units into ~/.config/systemd/user and enable the timer.
+#
 set -euo pipefail
 
 APPLY=0
@@ -30,6 +37,8 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Keep the source templates in-repo, but install the runnable units into the
+# user's systemd directory where systemctl --user can manage them.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC_SERVICE="$REPO_ROOT/systemd/private-state-integrity.service"
 SRC_TIMER="$REPO_ROOT/systemd/private-state-integrity.timer"
@@ -49,9 +58,11 @@ if [[ ! -x "$INTEGRITY_SCRIPT" ]]; then
   exit 1
 fi
 
+# Render the service file so ExecStart points at the current checkout path.
 escaped_integrity_script="${INTEGRITY_SCRIPT//\//\/}"
 sed "s|/path/to/public/dotfiles/scripts/private-state-integrity-check.sh|$escaped_integrity_script|g" "$SRC_SERVICE" > "$GENERATED_SERVICE"
 
+# Without --apply, this command behaves as an inspection tool rather than an installer.
 if [[ $DRY_RUN -eq 1 || $APPLY -eq 0 ]]; then
   echo "[info] source service template: $SRC_SERVICE"
   echo "[info] generated service: $GENERATED_SERVICE"
@@ -69,6 +80,7 @@ if [[ $DRY_RUN -eq 1 || $APPLY -eq 0 ]]; then
   exit 0
 fi
 
+# The actual install is user-scoped, so it does not require sudo.
 mkdir -p "$DEST_DIR"
 install -m 644 "$GENERATED_SERVICE" "$DEST_SERVICE"
 install -m 644 "$SRC_TIMER" "$DEST_TIMER"

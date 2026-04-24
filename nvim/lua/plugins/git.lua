@@ -1,3 +1,4 @@
+-- Git integration plugins for inline signs and LazyGit access.
 return {
   {
     "lewis6991/gitsigns.nvim",
@@ -8,6 +9,7 @@ return {
 
   {
     "kdheepak/lazygit.nvim",
+    -- Load LazyGit only when its command is invoked.
     cmd = "LazyGit",
     dependencies = {
       "nvim-lua/plenary.nvim",

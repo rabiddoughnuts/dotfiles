@@ -1,3 +1,4 @@
+-- Core editor infrastructure plugins: LSP, tooling, navigation, and sessions.
 return {
 
     {
@@ -6,6 +7,7 @@ return {
             "hrsh7th/cmp-nvim-lsp",
         },
         config = function()
+            -- This plugin-local LSP setup is the active path used by init.lua today.
             local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
             local servers = {
@@ -20,6 +22,7 @@ return {
                 ts_ls = {},
             }
 
+            -- Enable the configured servers with completion capabilities attached.
             for server, config in pairs(servers) do
                 config.capabilities = capabilities
                 vim.lsp.config(server, config)
@@ -40,6 +43,7 @@ return {
 
     { "nvim-treesitter/nvim-treesitter", build = ":TSUpdate" },
 
+    -- File explorer sidebar.
     { "nvim-neo-tree/neo-tree.nvim", branch = "v3.x", dependencies = {
             "nvim-lua/plenary.nvim",
             "nvim-tree/nvim-web-devicons",
@@ -47,6 +51,7 @@ return {
         }
     },
 
+    -- Fuzzy finder for files, grep, and picker-based navigation.
     {   "nvim-telescope/telescope.nvim", dependencies = {
             "nvim-lua/plenary.nvim"
         }   
@@ -59,4 +64,4 @@ return {
         event = "BufReadPre",
         opts = {},
     },
-}
+} 

@@ -1,3 +1,4 @@
+-- Completion and snippet plugins, including Copilot as a cmp source.
 return {
 
   {
@@ -6,6 +7,7 @@ return {
       "rafamadriz/friendly-snippets",
     },
     config = function()
+      -- Load the shared VS Code snippet collection lazily on demand.
       require("luasnip.loaders.from_vscode").lazy_load()
     end,
   },
@@ -25,6 +27,7 @@ return {
       local cmp = require("cmp")
       local luasnip = require("luasnip")
 
+      -- Register Copilot as another completion source inside nvim-cmp.
       require("copilot_cmp").setup()
 
       cmp.setup({
@@ -36,6 +39,7 @@ return {
         mapping = cmp.mapping.preset.insert({
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
+          -- Reuse Tab and Shift-Tab for completion navigation and snippet jumps.
           ["<Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
               cmp.select_next_item()
@@ -55,6 +59,7 @@ return {
             end
           end, { "i", "s" }),
         }),
+        -- Order sources so Copilot/LSP/snippets appear before path/buffer matches.
         sources = cmp.config.sources({
           { name = "copilot" },
           { name = "nvim_lsp" },

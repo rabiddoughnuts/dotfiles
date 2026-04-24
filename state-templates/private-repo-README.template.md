@@ -1,6 +1,8 @@
 # Private State Repository
 
 > Sensitive repository. Do not mirror this repository publicly.
+>
+> Template note: update the canonical path and bootstrap commands for the target machine before using this verbatim.
 
 ## Purpose
 

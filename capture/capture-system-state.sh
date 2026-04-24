@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
+#
+# Capture host package/firewall state into a sibling private-state repository.
+# General use:
+# - Run after package or firewall changes to refresh host-specific state files.
+# - Default output goes to ../private-state unless PRIVATE_STATE_ROOT is set.
+# - Uses a debounce window so automated hooks do not capture repeatedly.
+#
+# What this script writes:
+# - Package inventories for pacman/AUR/Flatpak when those tools exist.
+# - Firewall exports for iptables/nft when those tools exist.
+# - Simple metadata describing the last successful capture.
+#
 set -euo pipefail
 
 DRY_RUN=0
@@ -32,6 +44,8 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Resolve the public repo root first, then derive the adjacent private-state path.
+# The hostname becomes the per-machine bucket inside that private repository.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PRIVATE_STATE_ROOT="${PRIVATE_STATE_ROOT:-$REPO_ROOT/../private-state}"
 HOSTNAME_SAFE="$(cat /etc/hostname 2>/dev/null | head -n 1 | tr -d '[:space:]')"
@@ -48,6 +62,8 @@ echo "Capture target: $HOST_DIR"
 
 mkdir -p "$META_DIR"
 
+# Debounce repeated captures so hooks or repeated manual runs do not rewrite the
+# same state over and over within a short interval.
 if [[ $FORCE -eq 0 && -f "$LAST_CAPTURE_EPOCH_FILE" ]]; then
   now_epoch="$(date +%s)"
   last_epoch="$(cat "$LAST_CAPTURE_EPOCH_FILE" 2>/dev/null || echo 0)"
@@ -59,6 +75,7 @@ if [[ $FORCE -eq 0 && -f "$LAST_CAPTURE_EPOCH_FILE" ]]; then
   fi
 fi
 
+# Dry-run mode shows the capture plan without touching private-state contents.
 if [[ $DRY_RUN -eq 1 ]]; then
   echo "[dry-run] mkdir -p $HOST_DIR/packages $HOST_DIR/firewall $HOST_DIR/services"
   echo "[dry-run] capture pacman explicit packages"
@@ -69,6 +86,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
   exit 0
 fi
 
+# A simple lock file prevents overlapping runs from trampling the same outputs.
 if [[ -f "$LOCK_FILE" ]]; then
   echo "Capture lock exists: $LOCK_FILE"
   echo "Another capture may be running; remove lock if stale."
@@ -80,6 +98,8 @@ touch "$LOCK_FILE"
 
 mkdir -p "$HOST_DIR/packages" "$HOST_DIR/firewall" "$HOST_DIR/services"
 
+# Package capture is Arch-oriented: pacman provides the base package set and
+# paru is preferred for explicit AUR packages when it is installed.
 if command -v pacman >/dev/null 2>&1; then
   pacman -Qqe > "$HOST_DIR/packages/pacman-explicit.txt"
 fi
@@ -90,10 +110,13 @@ elif command -v pacman >/dev/null 2>&1; then
   pacman -Qqem > "$HOST_DIR/packages/aur-explicit.txt" || true
 fi
 
+# Flatpak is optional, so missing support is treated as a no-op instead of an error.
 if command -v flatpak >/dev/null 2>&1; then
   flatpak list --app --columns=application --user > "$HOST_DIR/packages/flatpak-explicit.txt" 2>/dev/null || true
 fi
 
+# Firewall exports are best-effort because these commands may be unavailable or
+# require privileges depending on the host configuration.
 if command -v iptables-save >/dev/null 2>&1; then
   iptables-save > "$HOST_DIR/firewall/iptables.rules" 2>/dev/null || true
 fi
@@ -102,6 +125,8 @@ if command -v nft >/dev/null 2>&1; then
   nft list ruleset > "$HOST_DIR/firewall/nft.rules" 2>/dev/null || true
 fi
 
+# Record both machine-readable metadata and a plain epoch timestamp for the
+# debounce check used at the start of the next run.
 capture_iso="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 capture_epoch="$(date +%s)"
 echo "$capture_epoch" > "$LAST_CAPTURE_EPOCH_FILE"

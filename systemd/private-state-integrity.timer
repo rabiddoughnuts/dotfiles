@@ -1,7 +1,11 @@
+# User-level timer for the private-state integrity service.
+# Persistent=true means missed runs fire after the next login/availability.
+
 [Unit]
 Description=Run private-state integrity check daily
 
 [Timer]
+# Randomize slightly so repeated machines do not all fire at the exact same time.
 OnCalendar=daily
 Persistent=true
 RandomizedDelaySec=15m

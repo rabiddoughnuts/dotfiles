@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# Copy the Fish ssh-agent helper into the user's conf.d directory.
+# General use:
+# - Reuse the tracked helper from homefiles/ without installing the full homefiles set.
+# - Useful when only the private-state ssh-agent behavior is needed.
+#
 set -euo pipefail
 
 DRY_RUN=0
@@ -28,6 +34,7 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# Reuse the canonical helper under homefiles/ so there is one source of truth.
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SRC="$REPO_ROOT/homefiles/.config/fish/conf.d/private-state-ssh-agent.fish"
 DEST_DIR="$HOME/.config/fish/conf.d"
@@ -44,6 +51,7 @@ if [[ $DRY_RUN -eq 1 ]]; then
   exit 0
 fi
 
+# Install into the per-user Fish conf.d location so new shells load it automatically.
 mkdir -p "$DEST_DIR"
 cp -f "$SRC" "$DEST"
 

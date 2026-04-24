@@ -1,3 +1,4 @@
+-- UI-focused plugins: tabs/buffers, indentation guides, and colorscheme.
 return {
   {
     "akinsho/bufferline.nvim",
@@ -21,6 +22,7 @@ return {
     lazy = false,
     priority = 1000,
     config = function()
+      -- Load the colorscheme eagerly so later plugins inherit the palette.
       vim.g.gruvbox_material_background = "medium"
       vim.g.gruvbox_material_foreground = "mix"
       vim.cmd.colorscheme("gruvbox-material")

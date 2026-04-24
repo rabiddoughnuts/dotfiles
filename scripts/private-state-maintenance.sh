@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Run the standard private-state maintenance chain from one entrypoint.
+# General use:
+# - Capture fresh machine state.
+# - Validate the private-state repository shape and capture age.
+# - Commit the result, with optional push to the remote backup.
+#
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -53,6 +60,7 @@ done
 
 cd "$REPO_ROOT"
 
+# Build argv arrays so each downstream script gets only the flags it understands.
 capture_args=()
 if [[ $DRY_RUN -eq 1 ]]; then
   capture_args+=(--dry-run)
@@ -70,9 +78,11 @@ if [[ $PUSH -eq 1 ]]; then
 fi
 sync_args+=(--message "$SYNC_MSG")
 
+# The three steps are intentionally explicit so failures stop the chain early.
 echo "[maintenance] capture step"
 ./capture/capture-system-state.sh "${capture_args[@]}"
 
+# Maintenance uses a wider age window than ad-hoc integrity checks.
 echo "[maintenance] integrity check step"
 MAX_CAPTURE_AGE_DAYS=30 PRIVATE_STATE_ROOT="$PRIVATE_STATE_ROOT" ./scripts/private-state-integrity-check.sh
 

@@ -20,6 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# Vendored notification helper from the Fish `done` plugin, kept here as a
+# system-level override so the CachyOS Fish config can source it consistently.
+# The structure below stays close to upstream; comments mark the major stages.
+
 if not status is-interactive
     exit
 end
@@ -76,6 +80,8 @@ function __done_windows_notification -a title -a message
 "
 end
 
+# Detect the currently focused graphical window using the platform-specific
+# toolchain available on this machine or session type.
 function __done_get_focused_window_id
     if type -q lsappinfo
         lsappinfo info -only bundleID (lsappinfo front | string replace 'ASN:0x0-' '0x') | cut -d '"' -f4
@@ -110,6 +116,8 @@ Add-Type @"
     end
 end
 
+# These helpers prevent notifications when the command finished in the pane or
+# window the user is already watching.
 function __done_is_tmux_window_active
     set -q fish_pid; or set -l fish_pid %self
 
@@ -179,6 +187,7 @@ function __done_is_process_window_focused
     return 0
 end
 
+# Convert Fish's millisecond duration into the short text used in notifications.
 function __done_humanize_duration -a milliseconds
     set -l seconds (math --scale=0 "$milliseconds/1000" % 60)
     set -l minutes (math --scale=0 "$milliseconds/60000" % 60)
@@ -195,7 +204,8 @@ function __done_humanize_duration -a milliseconds
     end
 end
 
-# verify that the system has graphical capabilities before initializing
+# Only enable notifications when the session can actually determine focus state
+# or when the user explicitly allows nongraphical notification handling.
 if test -z "$SSH_CLIENT" # not over ssh
     and count (__done_get_focused_window_id) >/dev/null # is able to get window id
     set __done_enabled
@@ -252,6 +262,7 @@ if set -q __done_enabled
                 set message (tmux lsw  -F"$__done_tmux_pane_format" -f '#{==:#{pane_id},'$TMUX_PANE'}')" $message"
             end
 
+            # Pick the first notification backend that matches the current environment.
             if set -q __done_notification_command
                 eval $__done_notification_command
                 if test "$__done_notify_sound" -eq 1
@@ -323,6 +334,7 @@ if set -q __done_enabled
     end
 end
 
+# Uninstall hook used by the plugin to remove its event handlers cleanly.
 function __done_uninstall -e done_uninstall
     # Erase all __done_* functions
     functions -e __done_ended
